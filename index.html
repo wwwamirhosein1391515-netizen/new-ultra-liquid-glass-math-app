@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شیشه مایع - ماشین حساب اولترا</title>
+    <!-- لود کردن Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        // افزودن فونت‌های فارسی برای نمایش بهتر
+                        sans: ['Inter', 'Tahoma', 'Vazirmatn', 'sans-serif'],
+                    },
+                    colors: {
+                        'glass-border': 'rgba(255, 255, 255, 0.4)',
+                        'glass-shine': 'rgba(255, 255, 255, 0.1)',
+                        'primary-light': '#8B5CF6', 
+                        'dark-text': '#1F2937',     
+                    },
+                    boxShadow: {
+                        'glass': '0 4px 30px rgba(0, 0, 0, 0.1)',
+                        'glass-inset': 'inset 0 0 20px rgba(255, 255, 255, 0.2)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* پس‌زمینه رنگارنگ و زنده */
+        body {
+            background: linear-gradient(135deg, #FFDEE9 0%, #B5FFFC 100%);
+            background-size: 400% 400%;
+            animation: gradient-shift 15s ease infinite;
+            min-height: 100vh;
+        }
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* ULTRA LIQUID GLASS EFFECT */
+        .glass-panel {
+            /* شفافیت و تاری بسیار بالا */
+            background: rgba(255, 255, 255, 0.1); 
+            backdrop-filter: blur(35px); 
+            -webkit-backdrop-filter: blur(35px);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            border-radius: 3rem; 
+        }
+
+        /* کادرهای داخلی - Liquid Pill */
+        .liquid-pill {
+            /* پس‌زمینه کاملاً محو و درخشش داخلی */
+            background: rgba(255, 255, 255, 0.05); 
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.15); 
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 2.5rem; 
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        /* دکمه‌های ماشین حساب - حباب‌های شیشه‌ای */
+        .calc-btn {
+            @apply flex items-center justify-center text-xl font-bold transition-all active:scale-95 shadow-lg;
+            height: 4rem; 
+            border-radius: 9999px; 
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(4px);
+            color: #374151;
+        }
+        .calc-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+
+        /* رنگ‌بندی دکمه‌ها */
+        .btn-op {
+            background: rgba(6, 182, 212, 0.15); 
+            color: #0891b2;
+            border-color: rgba(6, 182, 212, 0.3);
+        }
+        .btn-ac {
+            background: rgba(244, 114, 182, 0.15); 
+            color: #be185d;
+            border-color: rgba(244, 114, 182, 0.3);
+        }
+        .btn-eq {
+            background: rgba(139, 92, 246, 0.25); 
+            color: #6d28d9;
+            border-color: rgba(139, 92, 246, 0.4);
+            font-size: 1.5rem;
+        }
+
+        /* اینپوت‌ها: حذف کامل پس‌زمینه برای Liquid Glass واقعی */
+        .glass-input {
+            /* bg-transparent اینجا حتماً اعمال می‌شود */
+            @apply w-full text-center text-xl font-bold bg-transparent outline-none placeholder-gray-500/60;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            color: #1F2937;
+            transition: border-color 0.3s;
+        }
+        .glass-input:focus {
+            border-color: rgba(139, 92, 246, 0.6);
+        }
+
+        /* نمایشگر اصلی */
+        #display-screen {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
+            border-radius: 2rem;
+            backdrop-filter: blur(20px);
+        }
+        
+        /* تب‌ها */
+        .glass-tab {
+            @apply flex-1 py-2 text-[11px] font-bold rounded-2xl transition-all text-gray-600;
+        }
+        .glass-tab-active {
+            background: rgba(255, 255, 255, 0.3);
+            color: #6d28d9;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .fraction-line {
+            @apply border-b-2 border-gray-400/50 w-full my-1;
+        }
+    </style>
+</head>
+
+<body class="text-dark-text overflow-x-hidden selection:bg-pink-200 selection:text-pink-900">
+
+    <!-- هدر نامرئی و شیک -->
+    <header class="p-4 flex justify-between items-center max-w-sm mx-auto mt-2 opacity-80">
+        <span class="text-xs font-mono bg-white/20 px-3 py-1 rounded-full border border-white/20">Liquid OS 2.0</span>
+        <h1 class="text-lg font-bold text-gray-700 drop-shadow-sm">Beauty Calc</h1>
+    </header>
+
+    <!-- کانتینر اصلی -->
+    <main class="flex justify-center items-start pt-4 pb-20 px-4 min-h-[85vh]">
+        
+        <!-- پنل اصلی شیشه‌ای -->
+        <div class="glass-panel w-full max-w-sm p-6 relative overflow-hidden">
+            
+            <!-- حباب‌های نورانی پس‌زمینه برای زیبایی بیشتر شیشه -->
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-purple-300/30 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute top-40 -left-10 w-40 h-40 bg-blue-300/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <h2 class="text-xl font-bold text-center mb-6 text-gray-700/80">ابزارهای شفاف</h2>
+            
+            <!-- تب بار -->
+            <div class="flex bg-white/10 p-1.5 rounded-[2rem] mb-6 border border-white/20 backdrop-blur-sm">
+                <button onclick="changeTab('basic')" id="tab-basic" class="glass-tab glass-tab-active">پایه</button>
+                <button onclick="changeTab('fraction')" id="tab-fraction" class="glass-tab">کسر</button>
+                <button onclick="changeTab('root')" id="tab-root" class="glass-tab">توان</button>
+                <!-- نام تب تغییر نکرد -->
+                <button onclick="changeTab('equation')" id="tab-equation" class="glass-tab">معادلات</button>
+            </div>
+
+            <div id="app-content" class="relative z-10 transition-all duration-300">
+                <!-- محتوا -->
+            </div>
+
+        </div>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => changeTab('basic'));
+
+        function changeTab(tabName) {
+            ['basic', 'fraction', 'root', 'equation'].forEach(tab => {
+                const btn = document.getElementById(`tab-${tab}`);
+                if(btn) {
+                    if (tab === tabName) {
+                        btn.classList.add('glass-tab-active');
+                        btn.classList.remove('opacity-60');
+                    } else {
+                        btn.classList.remove('glass-tab-active');
+                        btn.classList.add('opacity-60');
+                    }
+                }
+            });
+
+            const contentDiv = document.getElementById('app-content');
+            contentDiv.style.opacity = '0';
+            
+            setTimeout(() => {
+                contentDiv.innerHTML = '';
+                if (tabName === 'basic') renderBasic();
+                else if (tabName === 'fraction') renderFraction();
+                else if (tabName === 'root') renderRoot();
+                else if (tabName === 'equation') renderEquation();
+                contentDiv.style.opacity = '1';
+            }, 150);
+        }
+
+        /* --- 1. Basic Calculator --- */
+        let displayVal = '0', prevVal = null, op = null, wait = true;
+
+        function renderBasic() {
+            const container = document.getElementById('app-content');
+            container.innerHTML = `
+                <div class="flex flex-col gap-5">
+                    <div id="display-screen" class="p-5 text-right text-4xl font-mono text-gray-700 break-all min-h-[5rem] flex items-center justify-end">
+                        ${displayVal}
+                    </div>
+                    
+                    <div class="grid grid-cols-4 gap-3">
+                        <button onclick="handleClr()" class="calc-btn btn-ac">AC</button>
+                        <button onclick="handleOp('/')" class="calc-btn btn-op">÷</button>
+                        <button onclick="handleOp('*')" class="calc-btn btn-op">×</button>
+                        <button onclick="handleOp('-')" class="calc-btn btn-op">-</button>
+
+                        <button onclick="handleNum(7)" class="calc-btn">7</button>
+                        <button onclick="handleNum(8)" class="calc-btn">8</button>
+                        <button onclick="handleNum(9)" class="calc-btn">9</button>
+                        <button onclick="handleOp('+')" class="calc-btn btn-op">+</button>
+
+                        <button onclick="handleNum(4)" class="calc-btn">4</button>
+                        <button onclick="handleNum(5)" class="calc-btn">5</button>
+                        <button onclick="handleNum(6)" class="calc-btn">6</button>
+                        <button onclick="handleEq()" class="calc-btn btn-eq row-span-2">=</button>
+
+                        <button onclick="handleNum(1)" class="calc-btn">1</button>
+                        <button onclick="handleNum(2)" class="calc-btn">2</button>
+                        <button onclick="handleNum(3)" class="calc-btn">3</button>
+
+                        <button onclick="handleNum(0)" class="calc-btn col-span-2">0</button>
+                        <button onclick="handleDot()" class="calc-btn">.</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Logic for Basic Calc
+        function updateScreen() {
+            const el = document.getElementById('display-screen');
+            if(el) el.innerText = displayVal.substring(0, 10);
+        }
+        function handleNum(n) {
+            if(wait) { displayVal = String(n); wait = false; }
+            else displayVal = displayVal === '0' ? String(n) : displayVal + n;
+            updateScreen();
+        }
+        function handleDot() {
+            if(wait) { displayVal = '0.'; wait = false; }
+            else if(!displayVal.includes('.')) displayVal += '.';
+            updateScreen();
+        }
+        function handleOp(o) {
+            const val = parseFloat(displayVal);
+            if(prevVal === null) prevVal = val;
+            else if(op) prevVal = calc(prevVal, val, op);
+            op = o; wait = true; displayVal = String(prevVal); updateScreen();
+        }
+        function handleEq() {
+            if(op && prevVal !== null) {
+                prevVal = calc(prevVal, parseFloat(displayVal), op);
+                op = null; wait = true; displayVal = String(prevVal); updateScreen();
+                prevVal = null;
+            }
+        }
+        function handleClr() {
+            displayVal = '0'; prevVal = null; op = null; wait = true; updateScreen();
+        }
+        function calc(a, b, o) {
+            if(o === '+') return a+b; if(o === '-') return a-b;
+            if(o === '*') return a*b; if(o === '/') return b!==0 ? a/b : 'Error';
+            return b;
+        }
+
+        /* --- 2. Equation Solver - Added Two-Variable Mode --- */
+        function renderEquation() {
+            const container = document.getElementById('app-content');
+            container.innerHTML = `
+                <div class="flex flex-col gap-4">
+                    <div class="flex bg-white/5 p-1 rounded-2xl mb-2 border border-white/10">
+                        <!-- سه مود: ۱ مجهول، ۲ مجهولی، کسری -->
+                        <button onclick="eqMode('linear')" id="mod-linear" class="flex-1 py-1 text-xs rounded-xl transition-all text-gray-500 hover:bg-white/10">1 مجهول</button>
+                        <button onclick="eqMode('two-var')" id="mod-two-var" class="flex-1 py-1 text-xs rounded-xl transition-all text-gray-500 hover:bg-white/10">2 مجهولی</button>
+                        <button onclick="eqMode('fractional')" id="mod-fractional" class="flex-1 py-1 text-xs rounded-xl transition-all text-gray-500 hover:bg-white/10">کسری</button>
+                    </div>
+                    <div id="eq-panel"></div>
+                </div>
+            `;
+            eqMode('linear');
+        }
+
+        function eqMode(m) {
+            const panel = document.getElementById('eq-panel');
+            
+            // Set active button style
+            ['linear', 'two-var', 'fractional'].forEach(mode => {
+                const btn = document.getElementById(`mod-${mode}`);
+                if (!btn) return;
+                // dynamic class setting
+                if (mode === m) {
+                    btn.className = "flex-1 py-1 text-xs rounded-xl bg-white/20 text-purple-700 font-bold shadow-sm";
+                } else {
+                    btn.className = "flex-1 py-1 text-xs rounded-xl text-gray-500 hover:bg-white/10";
+                }
+            });
+
+            if (m === 'linear') {
+                // ax + b = c
+                panel.innerHTML = `
+                    <div class="liquid-pill flex items-center justify-center gap-2 mb-4">
+                        <input type="number" id="l-a" class="glass-input w-12 text-sm" placeholder="a">
+                        <span class="text-gray-500 text-sm">x +</span>
+                        <input type="number" id="l-b" class="glass-input w-12 text-sm" placeholder="b">
+                        <span class="text-gray-500 text-sm">=</span>
+                        <input type="number" id="l-c" class="glass-input w-12 text-sm" placeholder="c">
+                    </div>
+                    <button onclick="solveLin()" class="calc-btn btn-eq w-full text-lg mb-4 shadow-xl">محاسبه x</button>
+                    <div id="res-lin" class="text-center font-bold text-lg text-purple-800 h-8"></div>
+                `;
+            } else if (m === 'two-var') {
+                // ax + by = c
+                // dx + ey = f
+                panel.innerHTML = `
+                    <div class="liquid-pill flex flex-col gap-3 p-4">
+                        <h4 class="text-sm font-semibold text-gray-600 mb-2 text-center border-b border-white/20 pb-2">دستگاه معادلات (ax + by = c)</h4>
+                        
+                        <!-- معادله اول -->
+                        <div class="flex items-center justify-center gap-2" dir="ltr">
+                            <input type="number" id="t-a" class="glass-input w-12 text-sm" placeholder="a">
+                            <span class="text-gray-500 text-sm">x +</span>
+                            <input type="number" id="t-b" class="glass-input w-12 text-sm" placeholder="b">
+                            <span class="text-gray-500 text-sm">y =</span>
+                            <input type="number" id="t-c" class="glass-input w-12 text-sm" placeholder="c">
+                        </div>
+
+                        <div class="h-px bg-white/10 my-1"></div>
+
+                        <!-- معادله دوم -->
+                        <div class="flex items-center justify-center gap-2" dir="ltr">
+                            <input type="number" id="t-d" class="glass-input w-12 text-sm" placeholder="d">
+                            <span class="text-gray-500 text-sm">x +</span>
+                            <input type="number" id="t-e" class="glass-input w-12 text-sm" placeholder="e">
+                            <span class="text-gray-500 text-sm">y =</span>
+                            <input type="number" id="t-f" class="glass-input w-12 text-sm" placeholder="f">
+                        </div>
+                    </div>
+                    <button onclick="solveTwoVar()" class="calc-btn btn-eq w-full text-lg mt-4 shadow-xl">حل دستگاه</button>
+                    <div id="res-two-var" class="text-center font-bold text-lg text-purple-800 h-16 mt-2"></div>
+                `;
+            } else {
+                // Fractional Equation: (ax+b)/c = (dx+e)/f
+                panel.innerHTML = `
+                    <div class="liquid-pill mb-4 flex flex-col items-center">
+                        <div class="flex items-center gap-3 w-full justify-center" dir="ltr">
+                            <div class="flex flex-col w-20 items-center">
+                                <div class="flex items-center gap-1">
+                                    <input id="f-a" class="glass-input text-sm p-0 h-6" placeholder="a">
+                                    <span class="text-gray-500 text-xs">x+</span>
+                                    <input id="f-b" class="glass-input text-sm p-0 h-6" placeholder="b">
+                                </div>
+                                <div class="fraction-line"></div>
+                                <input id="f-c" class="glass-input text-sm p-0 h-6" placeholder="c">
+                            </div>
+                            <span class="text-xl text-gray-400">=</span>
+                            <div class="flex flex-col w-20 items-center">
+                                <div class="flex items-center gap-1">
+                                    <input id="f-d" class="glass-input text-sm p-0 h-6" placeholder="d">
+                                    <span class="text-gray-500 text-xs">x+</span>
+                                    <input id="f-e" class="glass-input text-sm p-0 h-6" placeholder="e">
+                                </div>
+                                <div class="fraction-line"></div>
+                                <input id="f-f" class="glass-input text-sm p-0 h-6" placeholder="f">
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="solveFracEq()" class="calc-btn btn-eq w-full text-lg mb-4 shadow-xl">حل (طرفین وسطین)</button>
+                    <div id="res-frac" class="text-center font-bold text-lg text-purple-800 h-8"></div>
+                `;
+            }
+        }
+        
+        function solveLin() {
+            const a = parseFloat(document.getElementById('l-a').value);
+            const b = parseFloat(document.getElementById('l-b').value);
+            const c = parseFloat(document.getElementById('l-c').value);
+            const res = document.getElementById('res-lin');
+            if(isNaN(a) || isNaN(b) || isNaN(c)) { res.innerText = "لطفاً هر سه عدد را وارد کنید"; return; }
+            if(a===0) res.innerText = "ضریب x (a) نمی‌تواند ۰ باشد";
+            else res.innerText = `x = ${((c-b)/a).toFixed(4)}`;
+        }
+
+        // NEW: Two-Variable Solver Logic (Cramer's Rule)
+        function solveTwoVar() {
+            const getV = (id) => { const v=document.getElementById(id).value; return v===''?0:parseFloat(v); };
+            const a=getV('t-a'), b=getV('t-b'), c=getV('t-c');
+            const d=getV('t-d'), e=getV('t-e'), f=getV('t-f');
+            const res = document.getElementById('res-two-var');
+
+            if([a,b,c,d,e,f].some(isNaN)) { res.innerHTML = "لطفاً همه ضرایب را وارد کنید."; return; }
+            
+            // Determinants
+            const D = (a * e) - (b * d);
+            const Dx = (c * e) - (b * f);
+            const Dy = (a * f) - (c * d);
+
+            if (D === 0) {
+                if (Dx === 0 && Dy === 0) {
+                    res.innerHTML = '<span class="text-yellow-700">بینهایت جواب</span><br><span class="text-xs">دو خط منطبق بر هم هستند.</span>';
+                } else {
+                    res.innerHTML = '<span class="text-red-700">بدون جواب</span><br><span class="text-xs">دو خط موازی هستند.</span>';
+                }
+            } else {
+                const x = Dx / D;
+                const y = Dy / D;
+                res.innerHTML = `<div>x = ${x.toFixed(4)}</div><div>y = ${y.toFixed(4)}</div>`;
+            }
+        }
+
+
+        function solveFracEq() {
+            const getV = (id) => { const v=document.getElementById(id).value; return v===''?0:parseFloat(v); };
+            const a=getV('f-a'), b=getV('f-b');
+            const c = parseFloat(document.getElementById('f-c').value);
+            const d=getV('f-d'), e=getV('f-e');
+            const f = parseFloat(document.getElementById('f-f').value);
+            const res = document.getElementById('res-frac');
+            
+            if(isNaN(c) || isNaN(f)) { res.innerText = "مخرج‌ها را وارد کنید"; return; }
+            if(c===0 || f===0) { res.innerText = "مخرج صفر ممنوع است!"; return; }
+            
+            // X * (f*a - c*d) = (c*e - f*b)
+            const X_coef = (f*a) - (c*d);
+            const N_const = (c*e) - (f*b);
+            
+            if(X_coef===0) res.innerText = N_const===0 ? "همه اعداد (نامعین)" : "بدون جواب (متناقض)";
+            else res.innerText = `x = ${(N_const/X_coef).toFixed(4)}`;
+        }
+
+        /* --- 3. Fraction Calc --- */
+        function renderFraction() {
+            const c = document.getElementById('app-content');
+            c.innerHTML = `
+                <div class="flex flex-col gap-6">
+                    <div class="liquid-pill flex items-center justify-center gap-2 p-4" dir="ltr">
+                        <div class="flex flex-col w-16 items-center">
+                            <input id="fr1-n" class="glass-input h-8 text-sm p-0" placeholder="صورت">
+                            <div class="fraction-line"></div>
+                            <input id="fr1-d" class="glass-input h-8 text-sm p-0" placeholder="مخرج">
+                        </div>
+                        <select id="fr-op" class="bg-transparent font-bold text-xl text-purple-600 outline-none cursor-pointer">
+                            <option value="+">+</option><option value="-">-</option>
+                            <option value="*">×</option><option value="/">÷</option>
+                        </select>
+                        <div class="flex flex-col w-16 items-center">
+                            <input id="fr2-n" class="glass-input h-8 text-sm p-0" placeholder="صورت">
+                            <div class="fraction-line"></div>
+                            <input id="fr2-d" class="glass-input h-8 text-sm p-0" placeholder="مخرج">
+                        </div>
+                    </div>
+                    <button onclick="doFrac()" class="calc-btn btn-eq w-full text-lg shadow-xl">محاسبه</button>
+                    <div id="fr-res" class="liquid-pill min-h-[3rem] flex items-center justify-center text-gray-700 font-bold text-lg">...</div>
+                </div>
+            `;
+        }
+        function doFrac() {
+            const v = (id) => parseFloat(document.getElementById(id).value);
+            const n1=v('fr1-n'), d1=v('fr1-d'), n2=v('fr2-n'), d2=v('fr2-d');
+            const op = document.getElementById('fr-op').value;
+            const r = document.getElementById('fr-res');
+            
+            if([n1,d1,n2,d2].some(isNaN)) { r.innerText = "اعداد ناقص هستند"; return; }
+            if(d1===0 || d2===0) { r.innerText = "مخرج صفر ممنوع!"; return; }
+            
+            let rn, rd;
+            if(op==='+'){ rn=n1*d2 + n2*d1; rd=d1*d2; }
+            else if(op==='-'){ rn=n1*d2 - n2*d1; rd=d1*d2; }
+            else if(op==='*'){ rn=n1*n2; rd=d1*d2; }
+            else { if(n2===0){r.innerText="خطای تقسیم بر صفر"; return;} rn=n1*d2; rd=d1*n2; }
+            
+            // پیدا کردن بزرگترین مقسوم علیه مشترک برای ساده‌سازی
+            const g = (a,b) => b===0?a:g(b,a%b);
+            const cd = g(Math.abs(rn), Math.abs(rd));
+            
+            const simplifiedN = rn/cd;
+            const simplifiedD = rd/cd;
+
+            if (simplifiedD === 1) {
+                // اگر مخرج ۱ باشد، فقط عدد صحیح را نمایش بده
+                r.innerHTML = `<span class="text-3xl text-purple-700">${simplifiedN}</span>`;
+            } else {
+                // کسر ساده شده
+                r.innerHTML = `
+                    <div class="flex flex-col items-center">
+                        <span class="text-xl border-b-2 border-purple-400 px-3 pb-1">${simplifiedN}</span>
+                        <span class="text-lg pt-1">${simplifiedD}</span>
+                    </div>
+                `;
+            }
+        }
+
+        /* --- 4. Root/Power --- */
+        function renderRoot() {
+            const c = document.getElementById('app-content');
+            c.innerHTML = `
+                <div class="flex flex-col gap-6">
+                    <!-- اعمال Liquid Pill به کادر ورودی -->
+                    <div class="liquid-pill text-center p-4">
+                        <input id="rp-in" type="number" class="glass-input py-2 text-2xl" placeholder="عدد را اینجا وارد کنید">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="doRP()" class="calc-btn btn-eq">اجرا</button>
+                        <button onclick="document.getElementById('rp-in').value=''" class="calc-btn">پاک</button>
+                    </div>
+                    <!-- اعمال Liquid Pill به کادر نتیجه -->
+                    <div id="rp-out" class="liquid-pill min-h-[6rem] flex flex-col items-center justify-center font-mono text-gray-700 font-bold text-lg space-y-2">
+                        <!-- فضای خالی برای نتایج -->
+                        <span class="text-gray-500 text-sm">نتایج اینجا نمایش داده می‌شود</span>
+                    </div>
+                </div>
+            `;
+        }
+        function doRP() {
+            const val = parseFloat(document.getElementById('rp-in').value);
+            const out = document.getElementById('rp-out');
+            if(isNaN(val)) { out.innerHTML = `<span class="text-red-500">ورودی نامعتبر است.</span>`; return; }
+            
+            const sqrtResult = val < 0 ? 'خطا (ریشه منفی)' : Math.sqrt(val).toFixed(4);
+
+            out.innerHTML = `
+                <div class="flex items-center space-x-2" dir="ltr">
+                    <span class="text-2xl text-purple-600">√${val}</span>
+                    <span class="text-xl">=</span>
+                    <span class="text-2xl">${sqrtResult}</span>
+                </div>
+                <div class="flex items-center space-x-2 mt-2" dir="ltr">
+                    <span class="text-2xl text-purple-600">${val}²</span>
+                    <span class="text-xl">=</span>
+                    <span class="text-2xl">${(val*val).toFixed(4)}</span>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
+
